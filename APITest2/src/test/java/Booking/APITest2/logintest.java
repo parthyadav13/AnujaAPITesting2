@@ -19,11 +19,12 @@ public class logintest {
 		// post
 		RestAssured.baseURI = baseURI;
 
-		String response = given().header("Content-Type", "application/json").body(payLoad.LoginDetails()).when()
-				.post("auth").then().assertThat().statusCode(200).extract().response().asString(); // System.out.println(response);
+		String response = given().header("Content-Type", "application/json")
+				.body(payLoad.LoginDetails("admin", "password123")).when().post("auth").then().assertThat()
+				.statusCode(200).extract().response().asString(); // System.out.println(response);
 
 		// capture token
-		JsonPath js = new JsonPath(response);
+		JsonPath js = jsonParse.rawToJson(response);
 		String token = js.getString("token");
 		// System.out.println(token);
 
@@ -32,7 +33,7 @@ public class logintest {
 		String response2 = given().header("Content-Type", "application/json").when().get("booking").then().assertThat()
 				.statusCode(200).extract().response().asString();
 		// System.out.println(response2);
-		JsonPath js2 = new JsonPath(response2);// js2
+		JsonPath js2 = jsonParse.rawToJson(response2);// js2
 		int first = js2.getInt("[0].bookingid");
 
 		// System.out.println(first);
@@ -42,7 +43,7 @@ public class logintest {
 		String response3 = given().header("Content-Type", "application/json").when().get("booking/" + first + "").then()
 				.assertThat().statusCode(200).extract().response().asString();
 		System.out.println(response3);
-		JsonPath js3 = new JsonPath(response3);
+		JsonPath js3 = jsonParse.rawToJson(response3);
 		String firstname = js3.getString("firstname");
 		String lastname = js3.getString("lastname");
 		String checkin = js3.getString("bookingdates.checkin");
@@ -64,13 +65,14 @@ public class logintest {
 		// create booking scenario1
 
 		String response6 = given().header("Content-Type", "application/json").header("Accept", "application/json")
-				.body(payLoad.CreateBooking()).when().post("booking").then().assertThat().statusCode(200).extract()
-				.response().asString();
+				.body(payLoad.CreateBooking("Jim", "Brown", 111, true, "2018-01-01", "2019-01-01", "Breakfast")).when()
+				.post("booking").then().assertThat().statusCode(200).extract().response().asString();
 		System.out.println(response6);
 
 		// update booking
 		String response7 = given().header("Content-Type", "application/json").header("Accept", "application/json")
-				.header("Cookie", "token=" + token + "").body(payLoad.UpdateBooking()).when()
+				.header("Cookie", "token=" + token + "")
+				.body(payLoad.UpdateBooking("James", "Brown", 111, true, "2018-01-01", "2019-01-01", "Lunch")).when()
 				.put("booking/" + first + "").then().assertThat().statusCode(200).extract().response().asString();
 		System.out.println(response7);
 
